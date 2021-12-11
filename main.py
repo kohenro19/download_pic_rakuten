@@ -1,10 +1,23 @@
 import os
 import time
 import urllib.request
+import pandas as pd
 from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver import Firefox
 from selenium.webdriver.firefox.options import Options
 
+def __init__():
+    global df_log
+    df_log = pd.DataFrame(columns=['URL', 'リネーム品番'])
+    
+def open_csv():
+    df = pd.read_csv('rakuten.csv')
+    return df.URL, df.リネーム品番
+
+def write_log(url, error_message):
+    df_log = df_log.append({'URL': url, 'リネーム品番': error_message},ignore_index=True)
+    df_log.to_csv('output.csv', mode="w")
+         
 def set_driver(driver_path, headless_flg):
     if "chrome" in driver_path:
           options = ChromeOptions()
@@ -29,11 +42,12 @@ def set_driver(driver_path, headless_flg):
     else:
         return Firefox(executable_path=os.getcwd()  + "/" + driver_path,options=options)
 
-# def open_csv():
-#     pass
 
 # def save_pics()
 def main():
+    urls, rename_files = open_csv()
+    
+    
     # driverを起動
     if os.name == 'nt': #Windows
         driver = set_driver("chromedriver.exe", False)
@@ -41,25 +55,25 @@ def main():
         driver = set_driver("chromedriver", False)
     # urls, file_name = open_csv()
     
-    driver.get("https://item.rakuten.co.jp/sarasa-designstore/bag/")
-    time.sleep(10)
-    cnt = 1
-    elements = driver.find_elements_by_css_selector('.rakutenLimitedId_ImageMain1-3')
-    for element in elements:
-        pic_url = element.get_attribute('href')
-        # urllib.request.urlretrieve(pic_url, 'test.png')
 
-        file_name = "bag" + "_" + str(cnt) + ".png"
-        data = urllib.request.urlopen(pic_url).read()
-        with open(file_name, mode="wb") as f:
-            f.write(data)
-
-        cnt = cnt + 1
-
-        # 画像用のURLを取得
-        
-        # 画像を保存
-        # save_pics()
+    for url, rename_file in zip(urls, rename_files):
+        try:
+            driver.get(url)
+            time.sleep(10)
+            cnt = 1
+            elements = driver.find_elements_by_css_selector('.rakutenLimitedId_ImageMain1-3')
+            for element in elements:
+                pic_url = element.get_attribute('href')
+                file_name = rename_file + "_" + str(cnt) + ".png"
+                data = urllib.request.urlopen(pic_url).read()
+                with open(file_name, mode="wb") as f:
+                    f.write(data)
+                time.sleep(1)
+                cnt = cnt + 1
+            write_log(url, rename_file)
+        except:
+            write_log(url, "error")        
 
 if __name__ == "__main__":
+    __init__()
     main()
