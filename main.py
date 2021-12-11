@@ -6,15 +6,16 @@ from selenium.webdriver import Chrome, ChromeOptions
 from selenium.webdriver import Firefox
 from selenium.webdriver.firefox.options import Options
 
-def __init__():
-    global df_log
-    df_log = pd.DataFrame(columns=['URL', 'リネーム品番'])
+
+df_log = None
+df_log = pd.DataFrame(columns=['URL', 'リネーム品番'])
     
 def open_csv():
     df = pd.read_csv('rakuten.csv')
     return df.URL, df.リネーム品番
 
 def write_log(url, error_message):
+    global df_log
     df_log = df_log.append({'URL': url, 'リネーム品番': error_message},ignore_index=True)
     df_log.to_csv('output.csv', mode="w")
          
@@ -75,5 +76,4 @@ def main():
             write_log(url, "error")        
 
 if __name__ == "__main__":
-    __init__()
     main()
