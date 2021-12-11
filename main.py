@@ -44,11 +44,10 @@ def set_driver(driver_path, headless_flg):
         return Firefox(executable_path=os.getcwd()  + "/" + driver_path,options=options)
 
 
-# def save_pics()
+
 def main():
     urls, rename_files = open_csv()
-    
-    
+   
     # driverを起動
     if os.name == 'nt': #Windows
         driver = set_driver("chromedriver.exe", False)
@@ -60,7 +59,6 @@ def main():
     for url, rename_file in zip(urls, rename_files):
         try:
             driver.get(url)
-            time.sleep(10)
             cnt = 1
             elements = driver.find_elements_by_css_selector('.rakutenLimitedId_ImageMain1-3')
             for element in elements:
@@ -69,11 +67,12 @@ def main():
                 data = urllib.request.urlopen(pic_url).read()
                 with open(file_name, mode="wb") as f:
                     f.write(data)
-                time.sleep(1)
                 cnt = cnt + 1
+                time.sleep(30)
             write_log(url, rename_file)
-        except:
-            write_log(url, "error")        
 
+        except:
+            write_log(url, "error")
+        
 if __name__ == "__main__":
     main()
